@@ -1,0 +1,6 @@
+{
+  "appTitle": "qr_admin",
+  "@appTitle": {
+    "description": "The title of the application"
+  }
+}
