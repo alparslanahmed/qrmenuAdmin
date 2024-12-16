@@ -3,23 +3,21 @@ import 'package:go_router/go_router.dart';
 import 'package:qr_admin/src/auth/register_page.dart';
 
 class LoginPage extends StatelessWidget {
-  static const routeName = '/login';
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login'),
+        title: Text('Giriş Yap'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
-              decoration: InputDecoration(labelText: 'Email'),
+              decoration: InputDecoration(labelText: 'E-posta'),
             ),
             TextField(
-              decoration: InputDecoration(labelText: 'Password'),
+              decoration: InputDecoration(labelText: 'Şifre'),
               obscureText: true,
             ),
             SizedBox(height: 20),
@@ -27,13 +25,13 @@ class LoginPage extends StatelessWidget {
               onPressed: () {
                 // Handle login logic
               },
-              child: Text('Login'),
+              child: Text('Giriş Yap'),
             ),
             TextButton(
               onPressed: () {
                 context.go('/register');
               },
-              child: Text('Don\'t have an account? Register'),
+              child: Text('Hesabınız yok mu? Kayıt Olun.'),
             ),
           ],
         ),

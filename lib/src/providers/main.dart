@@ -15,4 +15,8 @@ class MainProvider with ChangeNotifier {
     _user = null;
     notifyListeners();
   }
+
+  bool isAuthenticated() {
+    return _user != null;
+  }
 }
