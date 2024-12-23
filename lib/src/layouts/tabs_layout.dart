@@ -25,9 +25,9 @@ class TabsLayout extends StatelessWidget {
         // branches of the shell route, which can be fetched using
         // `navigationShell.route.branches`.
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Ayarlar'),
-          BottomNavigationBarItem(icon: Icon(Icons.work), label: 'Kategoriler'),
-          BottomNavigationBarItem(icon: Icon(Icons.tab), label: 'Profil'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Ayarlar'),
+          BottomNavigationBarItem(icon: Icon(Icons.category), label: 'Kategoriler'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
         ],
         currentIndex: navigationShell.currentIndex,
         // Navigate to the current location of the branch at the provided index
