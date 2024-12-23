@@ -22,6 +22,12 @@ class HomePage extends StatelessWidget {
               },
               child: Text('Register'),
             ),
+            TextButton(
+              onPressed: () {
+                context.go('/profile');
+              },
+              child: Text('Profile'),
+            ),
           ],
         ));
   }

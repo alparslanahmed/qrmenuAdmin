@@ -1,37 +1,71 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:qr_admin/src/auth/register_page.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/main.dart';
 
 class LoginPage extends StatelessWidget {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  LoginPage({super.key});
+
   @override
   Widget build(BuildContext context) {
+    final mainProvider = Provider.of<MainProvider>(context, listen: false);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Giriş Yap'),
+        title: const Text('Giriş Yap'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
-              decoration: InputDecoration(labelText: 'E-posta'),
+              decoration: const InputDecoration(labelText: 'E-posta'),
+              controller: emailController,
             ),
             TextField(
-              decoration: InputDecoration(labelText: 'Şifre'),
+              decoration: const InputDecoration(labelText: 'Şifre'),
               obscureText: true,
+              controller: passwordController,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                // Handle login logic
+              onPressed: () async {
+                final email = emailController.text;
+                final password = passwordController.text;
+                final error = await mainProvider.login(email, password);
+                if (error != '') {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text('Giriş Başarısız!'),
+                        content: Text(error),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }else {
+                  context.go('/');
+                }
               },
-              child: Text('Giriş Yap'),
+              child: const Text('Giriş Yap'),
             ),
             TextButton(
               onPressed: () {
                 context.go('/register');
               },
-              child: Text('Hesabınız yok mu? Kayıt Olun.'),
+              child: const Text('Hesabınız yok mu? Kayıt Olun.'),
             ),
           ],
         ),
