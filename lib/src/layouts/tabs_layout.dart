@@ -1,58 +1,163 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
-/// BottomNavigationBar, where [child] is placed in the body of the Scaffold.
-class TabsLayout extends StatelessWidget {
-  /// Constructs an [ScaffoldWithNavBar].
+import '../providers/main.dart';
+
+class TabsLayout extends StatefulWidget {
+  final Widget child;
+  final GoRouterState state;
+
   const TabsLayout({
-    required this.navigationShell,
     Key? key,
-  }) : super(key: key ?? const ValueKey<String>('TabsLayout'));
+    required this.child,
+    required this.state,
+  }) : super(key: key);
 
-  /// The navigation shell and container for the branch Navigators.
-  final StatefulNavigationShell navigationShell;
+  @override
+  State<TabsLayout> createState() => _TabsLayoutState();
+}
 
-  // #docregion configuration-custom-shell
+class _TabsLayoutState extends State<TabsLayout> {
+  int _calculateSelectedIndex(String location) {
+    if (location.startsWith('/settings')) return 0;
+    if (location.startsWith('/home')) return 1;
+    if (location.startsWith('/profile')) return 2;
+    return 0;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final mainProvider = Provider.of<MainProvider>(context, listen: false);
+
     return Scaffold(
-      // The StatefulNavigationShell from the associated StatefulShellRoute is
-      // directly passed as the body of the Scaffold.
-      body: navigationShell,
+      body: mainProvider.user!.isEmailVerified
+          ? widget.child
+          : _buildVerificationForm(context),
       bottomNavigationBar: BottomNavigationBar(
-        // Here, the items of BottomNavigationBar are hard coded. In a real
-        // world scenario, the items would most likely be generated from the
-        // branches of the shell route, which can be fetched using
-        // `navigationShell.route.branches`.
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Ayarlar'),
-          BottomNavigationBarItem(icon: Icon(Icons.category), label: 'Kategoriler'),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Ana Sayfa'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
         ],
-        currentIndex: navigationShell.currentIndex,
-        // Navigate to the current location of the branch at the provided index
-        // when tapping an item in the BottomNavigationBar.
-        onTap: (int index) => navigationShell.goBranch(index),
+        currentIndex: _calculateSelectedIndex(widget.state.matchedLocation),
+        onTap: (int index) {
+          switch (index) {
+            case 0:
+              context.go('/settings');
+              break;
+            case 1:
+              context.go('/home');
+              break;
+            case 2:
+              context.go('/profile');
+              break;
+          }
+        },
       ),
     );
   }
-  // #enddocregion configuration-custom-shell
 
-  /// NOTE: For a slightly more sophisticated branch switching, change the onTap
-  /// handler on the BottomNavigationBar above to the following:
-  /// `onTap: (int index) => _onTap(context, index),`
-  // ignore: unused_element
-  void _onTap(BuildContext context, int index) {
-    // When navigating to a new branch, it's recommended to use the goBranch
-    // method, as doing so makes sure the last navigation state of the
-    // Navigator for the branch is restored.
-    navigationShell.goBranch(
-      index,
-      // A common pattern when using bottom navigation bars is to support
-      // navigating to the initial location when tapping the item that is
-      // already active. This example demonstrates how to support this behavior,
-      // using the initialLocation parameter of goBranch.
-      initialLocation: index == navigationShell.currentIndex,
-    );
+  Widget _buildVerificationForm(BuildContext context) {
+    final mainProvider = Provider.of<MainProvider>(context, listen: false);
+    final verificationToken = widget.state.uri.queryParameters['verification_token'];
+    if (verificationToken != null) {
+      return FutureBuilder<String>(
+        future: mainProvider.verify_email(verificationToken),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          
+          // Show error if there's an error or if data contains an error message
+          if (snapshot.hasError || (snapshot.hasData && snapshot.data!.isNotEmpty)) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(35.0),
+                    child: Text(snapshot.data ?? 'Doğrulama başarısız.'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      mainProvider.resend_verification_code();
+                      // Handle error if needed
+                    },
+                    child: const Text('Doğrulama E-postasını Tekrar Gönder'),
+                  ),
+                ],
+              ),
+            );
+          }
+          
+          // Only show success when we have data and it's empty (no error)
+          return const Center(
+            child: Text('Email başarıyla doğrulandı!'),
+          );
+        },
+      );
+    }else {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(35.0),
+              child: Text('Devam edebilmek için lütfen e-posta adresinizi doğrulayın. E-posta adresinize gönderilen doğrulama bağlantısına tıklayarak hesabınızı doğrulayabilirsiniz.'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final error = await mainProvider.resend_verification_code();
+                if (!mounted) return;
+                
+                if (error != '') {
+                  if (!context.mounted) return;
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text('Başarısız!'),
+                        content: Text(error),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } else {
+                  if (!context.mounted) return;
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text('Gönderildi.'),
+                        content: const Text("Kod gönderildi."),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
+              },
+              child: const Text('Doğrulama E-postasını Tekrar Gönder'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 }

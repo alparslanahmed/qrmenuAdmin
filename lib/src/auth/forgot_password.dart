@@ -4,11 +4,10 @@ import 'package:provider/provider.dart';
 
 import '../providers/main.dart';
 
-class LoginPage extends StatelessWidget {
+class ForgotPassword extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
 
-  LoginPage({super.key});
+  ForgotPassword({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +15,7 @@ class LoginPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Giriş Yap'),
+        title: const Text('Şifremi Unuttum'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -26,23 +25,17 @@ class LoginPage extends StatelessWidget {
               decoration: const InputDecoration(labelText: 'E-posta'),
               controller: emailController,
             ),
-            TextField(
-              decoration: const InputDecoration(labelText: 'Şifre'),
-              obscureText: true,
-              controller: passwordController,
-            ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
                 final email = emailController.text;
-                final password = passwordController.text;
-                final error = await mainProvider.login(email, password);
+                final error = await mainProvider.forgot_password(email);
                 if (error != '') {
                   showDialog(
                     context: context,
                     builder: (context) {
                       return AlertDialog(
-                        title: const Text('Giriş Başarısız!'),
+                        title: const Text('Başarısız!'),
                         content: Text(error),
                         actions: [
                           TextButton(
@@ -56,22 +49,10 @@ class LoginPage extends StatelessWidget {
                     },
                   );
                 }else {
-                  context.go('/home');
+                  context.go('/');
                 }
               },
-              child: const Text('Giriş Yap'),
-            ),
-            TextButton(
-              onPressed: () {
-                context.go('/forgot-password');
-              },
-              child: const Text('Şifremi Unuttum'),
-            ),
-            TextButton(
-              onPressed: () {
-                context.go('/register');
-              },
-              child: const Text('Hesabınız yok mu? Kayıt Olun.'),
+              child: const Text('Şifre Sıfırlama Talebi Gönder'),
             ),
           ],
         ),

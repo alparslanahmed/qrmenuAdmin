@@ -1,40 +1,121 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
-class RegisterPage extends StatelessWidget {
+import '../providers/main.dart';
+
+class RegisterPage extends StatefulWidget {
+  @override
+  _RegisterPageState createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController passwordConfirmController =
+      TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController businessNameController = TextEditingController();
+  final TextEditingController taxOfficeController = TextEditingController();
+  final TextEditingController taxNumberController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+
+  bool _isButtonDisabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+    passwordController.addListener(_validatePasswords);
+    passwordConfirmController.addListener(_validatePasswords);
+  }
+
+  void _validatePasswords() {
+    setState(() {
+      _isButtonDisabled = passwordController.text != passwordConfirmController.text;
+    });
+  }
+
+  @override
+  void dispose() {
+    passwordController.dispose();
+    passwordConfirmController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final mainProvider = Provider.of<MainProvider>(context, listen: false);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Kayıt Ol'),
+        title: const Text('Kayıt Ol'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
-              decoration: InputDecoration(labelText: 'Email'),
+              decoration: const InputDecoration(labelText: 'Ad Soyad'),
+              controller: nameController,
             ),
             TextField(
-              decoration: InputDecoration(labelText: 'Password'),
+              decoration: const InputDecoration(labelText: 'İşletme Adı'),
+              controller: businessNameController,
+            ),
+            TextField(
+              decoration: const InputDecoration(labelText: 'Vergi Dairesi'),
+              controller: taxOfficeController,
+            ),
+            TextField(
+              decoration: const InputDecoration(labelText: 'Vergi Numarası'),
+              controller: taxNumberController,
+            ),
+            TextField(
+              decoration: const InputDecoration(labelText: 'Adres'),
+              controller: addressController,
+            ),
+            TextField(
+              decoration: const InputDecoration(labelText: 'Telefon Numarası'),
+              controller: phoneController,
+            ),
+            TextField(
+              decoration: const InputDecoration(labelText: 'Eposta'),
+              controller: emailController,
+            ),
+            TextField(
+              decoration: const InputDecoration(labelText: 'Şifre'),
+              controller: passwordController,
               obscureText: true,
             ),
             TextField(
-              decoration: InputDecoration(labelText: 'Confirm Password'),
+              decoration: const InputDecoration(labelText: 'Şifre Tekrar'),
+              controller: passwordConfirmController,
               obscureText: true,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
+              onPressed: _isButtonDisabled ? null : () async {
                 // Handle registration logic
+                final error = await mainProvider.register({
+                  'name': nameController.text,
+                  'business_name': businessNameController.text,
+                  'tax_office': taxOfficeController.text,
+                  'tax_number': taxNumberController.text,
+                  'address': addressController.text,
+                  'phone': phoneController.text,
+                  'email': emailController.text,
+                  'password': passwordController.text,
+                  'password_confirm': passwordConfirmController.text,
+                });
               },
-              child: Text('Register'),
+              child: const Text('Kayıt Ol'),
             ),
             TextButton(
               onPressed: () {
                 context.go('/login');
               },
-              child: Text('Already have an account? Login'),
+              child: const Text('Zaten hesabın var mı? Giriş Yap'),
             ),
           ],
         ),
