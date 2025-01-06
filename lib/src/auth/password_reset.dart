@@ -57,62 +57,20 @@ class _PasswordResetState extends State<PasswordReset> {
                 final pass2 = passwordAgainController.text;
 
                 if (pass != pass2) {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text('Başarısız!'),
-                        content: const Text('Şifreler eşleşmiyor.'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('OK'),
-                          ),
-                        ],
-                      );
-                    },
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Şifreler eşleşmiyor!')),
                   );
                   return;
                 }
 
                 final error = await mainProvider.reset_password(code!, pass);
                 if (error != '') {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text('Başarısız!'),
-                        content: Text(error),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('OK'),
-                          ),
-                        ],
-                      );
-                    },
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(error)),
                   );
                 }else {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text('Başarılı!'),
-                        content: Text("Şifreniz sıfırlandı."),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('OK'),
-                          ),
-                        ],
-                      );
-                    },
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Şifreniz sıfırlandı.")),
                   );
                   context.go('/');
                 }

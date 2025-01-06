@@ -53,11 +53,17 @@ class MainProvider with ChangeNotifier {
     final response = await _apiClient.get('/auth/user');
 
     if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
+      final responseData = json.decode(utf8.decode(response.bodyBytes));
       final user = User(
           id: responseData['data']['id'],
           email: responseData['data']['email'],
-          isEmailVerified: responseData['data']['email_verified']
+          isEmailVerified: responseData['data']['email_verified'],
+          name: responseData['data']['name'],
+          businessName: responseData['data']['business_name'],
+          taxOffice: responseData['data']['tax_office'],
+          taxNumber: responseData['data']['tax_number'],
+          phone: responseData['data']['phone'],
+          address: responseData['data']['address']
       );
       setUser(user);
       return user;
@@ -113,6 +119,16 @@ class MainProvider with ChangeNotifier {
     }
   }
 
+  Future<String> password_change(String currentPassword, String newPassword) async {
+    final response = await _apiClient.post('/auth/change-password', {'old_password': currentPassword, 'new_password': newPassword});
+
+    if (response.statusCode == 200) {
+      return '';
+    } else {
+      return response.body;
+    }
+  }
+
   Future<String> resend_verification_code() async {
     final response = await _apiClient.get('/auth/send_verification_code');
 
@@ -150,19 +166,16 @@ class MainProvider with ChangeNotifier {
     final response = await _apiClient.post('/auth/register', data);
 
     if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      await db.collection('auth').doc('user').set(responseData['data']);
-      await db
-          .collection('auth')
-          .doc('token')
-          .set({'token': responseData['token']});
-      final user = User(
-          id: responseData['data']['id'],
-          email: responseData['data']['email'],
-          isEmailVerified: responseData['data']['email_verified'],
+      return '';
+    } else {
+      return response.body;
+    }
+  }
 
-      );
-      setUser(user);
+  Future<String> update_profile(Map<String, dynamic> data) async {
+    final response = await _apiClient.post('/auth/profile', data);
+
+    if (response.statusCode == 200) {
       return '';
     } else {
       return response.body;

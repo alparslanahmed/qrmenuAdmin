@@ -96,7 +96,6 @@ class _RegisterPageState extends State<RegisterPage> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _isButtonDisabled ? null : () async {
-                // Handle registration logic
                 final error = await mainProvider.register({
                   'name': nameController.text,
                   'business_name': businessNameController.text,
@@ -108,6 +107,16 @@ class _RegisterPageState extends State<RegisterPage> {
                   'password': passwordController.text,
                   'password_confirm': passwordConfirmController.text,
                 });
+                
+                if (!mounted) return;
+                
+                if (error != '') {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(error)),
+                  );
+                } else {
+                  context.go('/login');
+                }
               },
               child: const Text('Kayıt Ol'),
             ),

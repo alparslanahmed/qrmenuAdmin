@@ -31,22 +31,8 @@ class ForgotPassword extends StatelessWidget {
                 final email = emailController.text;
                 final error = await mainProvider.forgot_password(email);
                 if (error != '') {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text('Başarısız!'),
-                        content: Text(error),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('OK'),
-                          ),
-                        ],
-                      );
-                    },
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(error)),
                   );
                 }else {
                   context.go('/');

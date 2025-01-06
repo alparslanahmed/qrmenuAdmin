@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:localstore/localstore.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_admin/src/auth/forgot_password.dart';
+import 'package:qr_admin/src/auth/verification.dart';
 import 'package:qr_admin/src/layouts/tabs_layout.dart';
 import 'package:qr_admin/src/pages/home/home_page.dart';
 import 'package:qr_admin/src/pages/profile/profile_page.dart';
@@ -38,7 +39,10 @@ final GoRouter router = GoRouter(
 
     if (!isAuthenticated &&
         state.matchedLocation != '/login' &&
-        state.matchedLocation != '/register' && state.matchedLocation != '/forgot-password' && state.matchedLocation != '/password-reset') {
+        state.matchedLocation != '/register' &&
+        state.matchedLocation != '/forgot-password' &&
+        state.matchedLocation != '/password-reset' &&
+        state.matchedLocation != '/verification') {
       return '/login';
     } else {
       return null;
@@ -72,5 +76,6 @@ final GoRouter router = GoRouter(
     GoRoute(path: '/register', builder: (context, state) => RegisterPage()),
     GoRoute(path: '/forgot-password', builder: (context, state) => ForgotPassword()),
     GoRoute(path: '/password-reset', builder: (context, state) => PasswordReset(state: state,)),
+    GoRoute(path: '/verification', builder: (context, state) => VerificationPage(state: state)),
   ],
 );
