@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:localstore/localstore.dart';
@@ -8,7 +9,7 @@ import '../models/user.dart';
 final db = Localstore.instance;
 
 class MainProvider with ChangeNotifier {
-  final ApiClient _apiClient = ApiClient();
+  final ApiClient apiClient = ApiClient();
 
   String? _token;
 
@@ -50,7 +51,7 @@ class MainProvider with ChangeNotifier {
   }
 
   Future<User?> getRemoteUser() async {
-    final response = await _apiClient.get('/auth/user');
+    final response = await apiClient.get('/api/auth/user');
 
     if (response.statusCode == 200) {
       final responseData = json.decode(utf8.decode(response.bodyBytes));
@@ -63,7 +64,8 @@ class MainProvider with ChangeNotifier {
           taxOffice: responseData['data']['tax_office'],
           taxNumber: responseData['data']['tax_number'],
           phone: responseData['data']['phone'],
-          address: responseData['data']['address']
+          address: responseData['data']['address'],
+          logoURL: responseData['data']['logo_url']
       );
       setUser(user);
       return user;
@@ -74,8 +76,8 @@ class MainProvider with ChangeNotifier {
   }
 
   Future<String> login(String email, String password) async {
-    final response = await _apiClient.post(
-      '/auth/token',
+    final response = await apiClient.post(
+      '/api/auth/token',
       {'email': email, 'password': password},
     );
 
@@ -100,7 +102,7 @@ class MainProvider with ChangeNotifier {
   }
 
   Future<String> forgot_password(String email) async {
-    final response = await _apiClient.post('/auth/forgot-password', {'email': email});
+    final response = await apiClient.post('/api/auth/forgot-password', {'email': email});
 
     if (response.statusCode == 200) {
       return '';
@@ -110,7 +112,7 @@ class MainProvider with ChangeNotifier {
   }
 
   Future<String> reset_password(String key, String password) async {
-    final response = await _apiClient.post('/auth/reset-password', {'code': key, 'password': password});
+    final response = await apiClient.post('/api/auth/reset-password', {'code': key, 'password': password});
 
     if (response.statusCode == 200) {
       return '';
@@ -120,7 +122,7 @@ class MainProvider with ChangeNotifier {
   }
 
   Future<String> password_change(String currentPassword, String newPassword) async {
-    final response = await _apiClient.post('/auth/change-password', {'old_password': currentPassword, 'new_password': newPassword});
+    final response = await apiClient.post('/api/auth/change-password', {'old_password': currentPassword, 'new_password': newPassword});
 
     if (response.statusCode == 200) {
       return '';
@@ -130,7 +132,7 @@ class MainProvider with ChangeNotifier {
   }
 
   Future<String> resend_verification_code() async {
-    final response = await _apiClient.get('/auth/send_verification_code');
+    final response = await apiClient.get('/api/auth/send_verification_code');
 
     if (response.statusCode == 200) {
       return '';
@@ -140,7 +142,7 @@ class MainProvider with ChangeNotifier {
   }
 
   Future<String> verify_email(String key) async {
-    final response = await _apiClient.post('/auth/verify_email', {'code': key});
+    final response = await apiClient.post('/api/auth/verify_email', {'code': key});
 
     if (response.statusCode == 200) {
       final responseData = json.decode(response.body);
@@ -163,7 +165,7 @@ class MainProvider with ChangeNotifier {
   }
 
   Future<String> register(Map<String, dynamic> data) async {
-    final response = await _apiClient.post('/auth/register', data);
+    final response = await apiClient.post('/api/auth/register', data);
 
     if (response.statusCode == 200) {
       return '';
@@ -173,7 +175,7 @@ class MainProvider with ChangeNotifier {
   }
 
   Future<String> update_profile(Map<String, dynamic> data) async {
-    final response = await _apiClient.post('/auth/profile', data);
+    final response = await apiClient.post('/api/auth/profile', data);
 
     if (response.statusCode == 200) {
       return '';
@@ -181,4 +183,23 @@ class MainProvider with ChangeNotifier {
       return response.body;
     }
   }
+
+  Future<String> uploadAvatar(Uint8List image) async {
+    final response = await apiClient.post("/api/auth/avatar", {'image': image});
+    if (response.statusCode == 200) {
+      return '';
+    } else {
+      return response.body;
+    }
+  }
+
+  Future<Uint8List> getImage(String url) async {
+    final response = await apiClient.get(url);
+    if (response.statusCode == 200) {
+      return response.bodyBytes;
+    } else {
+      return Uint8List(0);
+    }
+  }
+
 }

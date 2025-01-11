@@ -8,6 +8,7 @@ class User {
   final String? taxNumber;
   final String? address;
   final String? phone;
+  final String? logoURL;
 
   User({
     required this.id,
@@ -19,5 +20,6 @@ class User {
     this.taxNumber,
     this.address,
     this.phone,
+    this.logoURL,
   });
 }

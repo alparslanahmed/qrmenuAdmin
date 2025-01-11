@@ -1,5 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker_web/image_picker_web.dart';
 import 'package:provider/provider.dart';
 import '../../models/user.dart';
 import '../../providers/main.dart';
@@ -22,23 +27,46 @@ class _ProfilePageState extends State<ProfilePage> {
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
 
+  Uint8List _image = Uint8List(0);
+
   @override
   void initState() {
     super.initState();
+
     final mainProvider = Provider.of<MainProvider>(context, listen: false);
-    _updateControllers(mainProvider.user);
+
+    mainProvider.getRemoteUser();
+
+    _updateControllers(mainProvider.user, mainProvider);
 
     mainProvider.addListener(() {
-      _updateControllers(mainProvider.user);
+      _updateControllers(mainProvider.user, mainProvider);
     });
   }
 
-  void _updateControllers(User? user) {
+  void _updateControllers(User? user, MainProvider mainProvider) {
     _businessNameController.text = user?.businessName ?? '';
     _taxOfficeController.text = user?.taxOffice ?? '';
     _taxNumberController.text = user?.taxNumber ?? '';
     _addressController.text = user?.address ?? '';
     _phoneController.text = user?.phone ?? '';
+
+    if (user?.logoURL != null) {
+      mainProvider.getImage(user?.logoURL ?? '').then((value) {
+        if(value.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error loading image.')),
+          );
+        }
+        setState(() {
+          _image = value;
+        });
+      }).catchError((error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading image: $error')),
+        );
+      });
+    }
   }
 
   @override
@@ -64,6 +92,24 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _image == null
+                            ? Text('No image selected.')
+                            : Image.memory(_image, height: 200),
+                        SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: _pickImage,
+                          child: Text('Select Image'),
+                        ),
+                        SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: _uploadImage,
+                          child: Text('Upload Image'),
+                        ),
+                      ],
+                    ),
                     TextFormField(
                       controller: _oldPasswordController,
                       decoration: InputDecoration(labelText: 'Eski Şifre'),
@@ -228,4 +274,38 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
+
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePickerWeb.getImageAsBytes();
+
+    if (pickedFile != null) {
+      setState(() {
+        _image = pickedFile;
+      });
+    }
+  }
+
+  Future<void> _uploadImage() async {
+    if (_image.isEmpty) return;
+
+    final mainProvider = Provider.of<MainProvider>(context, listen: false);
+    final response = await mainProvider.uploadAvatar(_image).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update avatar: $error')),
+      );
+
+      return '';
+    });
+
+    if (response == '') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Avatar updated successfully!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update avatar: $response')),
+      );
+    }
+  }
+
 }

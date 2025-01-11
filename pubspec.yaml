@@ -19,6 +19,7 @@ dependencies:
   http: 1.2.2
   flutter_dotenv: 5.2.1
   localstore: 1.4.0
+  image_picker_web: 4.0.0
 
 dev_dependencies:
   flutter_test:
