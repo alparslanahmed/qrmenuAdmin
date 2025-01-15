@@ -13,7 +13,10 @@ import 'package:qr_admin/src/providers/main.dart';
 import '../auth/login_page.dart';
 import '../auth/password_reset.dart';
 import '../auth/register_page.dart';
+import '../models/category.dart';
 import '../models/user.dart';
+import '../pages/category/category_page.dart';
+import '../pages/product/product_page.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -65,6 +68,20 @@ final GoRouter router = GoRouter(
         GoRoute(
           path: '/home',
           builder: (context, state) => HomePage(),
+        ),
+        GoRoute(
+          path: '/category/:id',
+          builder: (context, state) {
+            final int? categoryId = int.tryParse(state.pathParameters['id']!);
+            return CategoryDetailPage(categoryId: categoryId!);
+          },
+        ),
+        GoRoute(
+          path: '/product/:id',
+          builder: (context, state) {
+            final int? productId = int.tryParse(state.pathParameters['id']!);
+            return ProductDetailPage(productId: productId!);
+          },
         ),
         GoRoute(
           path: '/profile',

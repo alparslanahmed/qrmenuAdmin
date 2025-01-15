@@ -49,7 +49,7 @@ class _TabsLayoutState extends State<TabsLayout> {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Ayarlar'),
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Ana Sayfa'),
+          BottomNavigationBarItem(icon: Icon(Icons.category), label: 'Kategoriler'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
         ],
         currentIndex: _calculateSelectedIndex(widget.state.matchedLocation),

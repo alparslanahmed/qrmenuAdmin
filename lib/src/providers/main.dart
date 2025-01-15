@@ -3,13 +3,19 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:localstore/localstore.dart';
+import 'package:qr_admin/src/models/category.dart';
 import '../api.dart';
+import '../models/product.dart';
 import '../models/user.dart';
 
 final db = Localstore.instance;
 
 class MainProvider with ChangeNotifier {
   final ApiClient apiClient = ApiClient();
+
+  List<Category> _categories = [];
+
+  List<Category> get categories => _categories;
 
   String? _token;
 
@@ -65,8 +71,7 @@ class MainProvider with ChangeNotifier {
           taxNumber: responseData['data']['tax_number'],
           phone: responseData['data']['phone'],
           address: responseData['data']['address'],
-          logoURL: responseData['data']['logo_url']
-      );
+          logoURL: responseData['data']['logo_url']);
       setUser(user);
       return user;
     } else {
@@ -102,7 +107,8 @@ class MainProvider with ChangeNotifier {
   }
 
   Future<String> forgot_password(String email) async {
-    final response = await apiClient.post('/api/auth/forgot-password', {'email': email});
+    final response =
+        await apiClient.post('/api/auth/forgot-password', {'email': email});
 
     if (response.statusCode == 200) {
       return '';
@@ -112,7 +118,8 @@ class MainProvider with ChangeNotifier {
   }
 
   Future<String> reset_password(String key, String password) async {
-    final response = await apiClient.post('/api/auth/reset-password', {'code': key, 'password': password});
+    final response = await apiClient
+        .post('/api/auth/reset-password', {'code': key, 'password': password});
 
     if (response.statusCode == 200) {
       return '';
@@ -121,8 +128,10 @@ class MainProvider with ChangeNotifier {
     }
   }
 
-  Future<String> password_change(String currentPassword, String newPassword) async {
-    final response = await apiClient.post('/api/auth/change-password', {'old_password': currentPassword, 'new_password': newPassword});
+  Future<String> password_change(
+      String currentPassword, String newPassword) async {
+    final response = await apiClient.post('/api/auth/change-password',
+        {'old_password': currentPassword, 'new_password': newPassword});
 
     if (response.statusCode == 200) {
       return '';
@@ -142,7 +151,8 @@ class MainProvider with ChangeNotifier {
   }
 
   Future<String> verify_email(String key) async {
-    final response = await apiClient.post('/api/auth/verify_email', {'code': key});
+    final response =
+        await apiClient.post('/api/auth/verify_email', {'code': key});
 
     if (response.statusCode == 200) {
       final responseData = json.decode(response.body);
@@ -155,8 +165,7 @@ class MainProvider with ChangeNotifier {
       final user = User(
           id: responseData['data']['id'],
           email: responseData['data']['email'],
-          isEmailVerified: true
-      );
+          isEmailVerified: true);
       setUser(user);
       return '';
     } else {
@@ -202,4 +211,135 @@ class MainProvider with ChangeNotifier {
     }
   }
 
+  Future<void> createCategory(String name, Uint8List image) async {
+    try {
+      final response = await apiClient
+          .post('/api/categories', {'name': name, 'image': image});
+      if (response.statusCode == 200) {
+        notifyListeners();
+      } else {
+        throw Exception('Failed to create category');
+      }
+    } catch (error) {
+      throw Exception('Failed to create category: $error');
+    }
+  }
+
+  Future<Category> getCategory(int id) async {
+    final response = await apiClient.get('/api/categories/$id');
+
+    if (response.statusCode == 200) {
+      final data = json.decode(utf8.decode(response.bodyBytes));
+      return Category.fromJson(data);
+    } else {
+      throw Exception('Failed to get category');
+    }
+  }
+
+  Future<void> updateCategory(int id, String name, Uint8List image) async {
+    try {
+      final response = await apiClient.put('/api/categories/$id',
+          {'name': name, 'image': image});
+      if (response.statusCode == 200) {
+        notifyListeners();
+      } else {
+        throw Exception('Failed to update category');
+      }
+    } catch (error) {
+      throw Exception('Failed to update category: $error');
+    }
+  }
+
+  Future<void> deleteCategory(int id) async {
+    try {
+      final response = await apiClient.delete('/api/categories/$id');
+      if (response.statusCode == 200) {
+        notifyListeners();
+      } else {
+        throw Exception('Failed to delete category');
+      }
+    } catch (error) {
+      throw Exception('Failed to delete category: $error');
+    }
+  }
+
+  Future<List<Category>> fetchCategories() async {
+    final response = await apiClient.get('/api/categories');
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes));
+      _categories = data.map((json) {
+        return Category.fromJson(json);
+      }).toList();
+      notifyListeners();
+      return categories;
+    } else {
+      return [];
+    }
+  }
+
+  Future<List<Product>> fetchProducts(int categoryId) async {
+    final response = await apiClient.get('/api/products/$categoryId');
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes));
+      return data.map((json) {
+        return Product.fromJson(json);
+      }).toList();
+    } else {
+      return [];
+    }
+  }
+
+  Future<void> createProduct(int categoryId, String name, String description, double price, Uint8List image) async {
+    try {
+      final response = await apiClient.post('/api/products',
+          {'category_id': categoryId, 'name': name, 'description': description, 'price': price, 'image': image});
+      if (response.statusCode == 200) {
+        notifyListeners();
+      } else {
+        throw Exception('Failed to create product');
+      }
+    } catch (error) {
+      throw Exception('Failed to create product: $error');
+    }
+  }
+
+  Future<Product> getProduct(int id) async {
+    final response = await apiClient.get('/api/product/$id');
+
+    if (response.statusCode == 200) {
+      final data = json.decode(utf8.decode(response.bodyBytes));
+      return Product.fromJson(data);
+    } else {
+      throw Exception('Failed to get product');
+    }
+  }
+
+  Future<void> updateProduct(int id, String name, String description, double price, Uint8List image) async {
+    try {
+      final response = await apiClient.put('/api/products/$id',
+          {'name': name, 'description': description, 'price': price, 'image': image});
+      if (response.statusCode == 200) {
+        notifyListeners();
+      } else {
+        throw Exception('Failed to update product');
+      }
+    } catch (error) {
+      throw Exception('Failed to update product: $error');
+    }
+  }
+
+  Future<void> deleteProduct(int id) async {
+    try {
+      final response = await apiClient.delete('/api/products/$id');
+      if (response.statusCode == 200) {
+        notifyListeners();
+      } else {
+        throw Exception('Failed to delete product');
+      }
+    } catch (error) {
+      throw Exception('Failed to delete product: $error');
+    }
+  }
 }

@@ -101,12 +101,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: _pickImage,
-                          child: Text('Select Image'),
-                        ),
-                        SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: _uploadImage,
-                          child: Text('Upload Image'),
+                          child: Text('Görsel Yükle'),
                         ),
                       ],
                     ),
@@ -281,6 +276,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (pickedFile != null) {
       setState(() {
         _image = pickedFile;
+        _uploadImage();
       });
     }
   }
