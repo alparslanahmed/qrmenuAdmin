@@ -9,6 +9,7 @@ class User {
   final String? address;
   final String? phone;
   final String? logoURL;
+  final String businessSlug;
 
   User({
     required this.id,
@@ -21,5 +22,6 @@ class User {
     this.address,
     this.phone,
     this.logoURL,
+    required this.businessSlug,
   });
 }

@@ -32,7 +32,7 @@ final GoRouter router = GoRouter(
 
     await db.collection('auth').doc('user').get().then((value) {
       if (value != null) {
-        final user = User(id: value['id'], email: value['email'], isEmailVerified: value['email_verified']);
+        final user = User(id: value['id'], email: value['email'], isEmailVerified: value['email_verified'], businessSlug: value['business_slug']);
         mainProvider.setUser(user);
       }
     });

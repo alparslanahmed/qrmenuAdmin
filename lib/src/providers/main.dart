@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:localstore/localstore.dart';
 import 'package:qr_admin/src/models/category.dart';
 import '../api.dart';
@@ -67,6 +68,7 @@ class MainProvider with ChangeNotifier {
           isEmailVerified: responseData['data']['email_verified'],
           name: responseData['data']['name'],
           businessName: responseData['data']['business_name'],
+          businessSlug: responseData['data']['business_slug'],
           taxOffice: responseData['data']['tax_office'],
           taxNumber: responseData['data']['tax_number'],
           phone: responseData['data']['phone'],
@@ -84,21 +86,24 @@ class MainProvider with ChangeNotifier {
     final response = await apiClient.post(
       '/api/auth/token',
       {'email': email, 'password': password},
-    );
+    ).onError((error, stackTrace) {
+      return Future(() => Response(error.toString(), 500));
+    });
 
     if (response.statusCode == 200) {
       final responseData = json.decode(response.body);
       await db.collection('auth').doc('user').set({
         'id': responseData['user']['id'],
         'email': responseData['user']['email'],
-        'email_verified': responseData['user']['email_verified']
+        'email_verified': responseData['user']['email_verified'],
+        'business_slug': responseData['user']['business_slug']
       });
       await db
           .collection('auth')
           .doc('token')
           .set({'token': responseData['token']});
       final user = User(
-          id: responseData['user']['id'], email: responseData['user']['email']);
+          id: responseData['user']['id'], email: responseData['user']['email'], businessSlug: responseData['user']['business_slug']);
       setUser(user);
       return '';
     } else {
@@ -165,6 +170,7 @@ class MainProvider with ChangeNotifier {
       final user = User(
           id: responseData['data']['id'],
           email: responseData['data']['email'],
+          businessSlug: responseData['data']['business_slug'],
           isEmailVerified: true);
       setUser(user);
       return '';

@@ -38,10 +38,24 @@ class LoginPage extends StatelessWidget {
                 final password = passwordController.text;
                 final error = await mainProvider.login(email, password);
                 if (error != '') {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Giriş Başarısız!')),
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text('Giriş Başarısız!'),
+                        content: Text(error),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
                   );
-                }else {
+                } else {
                   context.go('/home');
                 }
               },
