@@ -76,8 +76,17 @@ class _HomePageState extends State<HomePage> {
                           mainProvider.createCategory(
                               _categoryNameController.text, _image).then((_) {
                                 mainProvider.fetchCategories();
+                                _categoryNameController.clear();
+                                setState(() {
+                                  _image = Uint8List(0);
+                                });
+                          }).catchError((error) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(error.toString()),
+                              ),
+                            );
                           });
-                          _categoryNameController.clear();
                         }
                       },
                       child: Text('Kategori Ekle'),
